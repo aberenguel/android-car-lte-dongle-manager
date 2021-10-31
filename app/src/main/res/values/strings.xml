@@ -8,9 +8,9 @@
     <string name="ethernet_wifi_aps_title">Prioritized Access Points</string>
     <string name="ethernet_wifi_aps_summary">Access points that, when available, will turn off the ethernet interface</string>
 
-    <string name="usb_reset_btn_txt">USB Reset</string>
-    <string name="usb_modeswitch_btn_txt">usb_modeswitch</string>
-    <string name="huawei_switchDebugMode_btn_txt">Huawei SwitchDebugMode</string>
+    <string name="usb_reset_btn_txt">USB Reset\n(via setprops)</string>
+    <string name="usb_modeswitch_btn_txt">usb_modeswitch\n(parameters hard-coded)</string>
+    <string name="huawei_switchDebugMode_btn_txt">Huawei SwitchDebugMode\n(at 192.168.8.1)</string>
     <string name="ethernet_wifi_btn_txt">Wi-Fi Scan</string>
     <string name="settings_btn_txt">Settings</string>
 

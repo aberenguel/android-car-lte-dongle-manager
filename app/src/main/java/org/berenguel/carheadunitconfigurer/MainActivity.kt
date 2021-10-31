@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.checkWifiEthernetBtn.setOnClickListener {
+        binding.wifiScanBtn.setOnClickListener {
             EthernetWifiManager.startWifiScan(this)
         }
 
