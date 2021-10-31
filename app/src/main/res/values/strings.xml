@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">CarHeadUnitConfigurer</string>
-
+    <string name="app_name">LTE Dongle Manager</string>
 
     <!-- Ethernet + Wifi Switch -->
     <string name="ethernet_wifi_header">Ethernet + Wifi Switch</string>
