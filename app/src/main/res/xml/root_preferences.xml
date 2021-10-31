@@ -1,0 +1,23 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/ethernet_wifi_header">
+
+        <EditTextPreference
+            android:key="ethernet_wifi_interface_name"
+            app:defaultValue="eth0"
+            app:title="@string/ethernet_wifi_interface_name_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <MultiSelectListPreference
+            app:entries="@array/empty_array"
+            app:entryValues="@array/empty_array"
+            app:key="ethernet_wifi_aps"
+            app:summary="@string/ethernet_wifi_aps_summary"
+            app:title="@string/ethernet_wifi_aps_title"
+            app:useSimpleSummaryProvider="true" />
+
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
