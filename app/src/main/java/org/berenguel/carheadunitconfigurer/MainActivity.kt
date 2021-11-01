@@ -3,6 +3,7 @@ package org.berenguel.carheadunitconfigurer
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -73,6 +74,9 @@ class MainActivity : AppCompatActivity() {
         binding.settingsBtn.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
+
+        binding.gridLayout.columnCount =
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 2 else 1
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             requestLocationPermissionAndroidQ()
