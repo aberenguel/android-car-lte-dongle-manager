@@ -5,18 +5,24 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import android.webkit.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withContext
+import java.lang.RuntimeException
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 object HuaweiSwitchDebugModeManager {
 
     private const val TAG = "HuaweiDeviceModeSet"
 
-    private var error = false
-
     @SuppressLint("SetJavaScriptEnabled")
-    fun changeDeviceModeSet(context: Context) {
+    suspend fun changeDeviceModeSet(context: Context) {
 
         Log.i(TAG, "Changing to DebugMode")
 
+        val countDownLatch = CountDownLatch(1)
         val webView = WebView(context)
         webView.settings.javaScriptEnabled = true
         webView.webViewClient = object : WebViewClient() {
@@ -35,6 +41,7 @@ object HuaweiSwitchDebugModeManager {
                     Log.i(TAG, "Finished")
                     view?.destroy()
                 }
+                countDownLatch.countDown()
             }
 
             override fun onReceivedError(
@@ -44,7 +51,7 @@ object HuaweiSwitchDebugModeManager {
             ) {
                 super.onReceivedError(view, request, error)
                 Log.e(TAG, "onReceivedError ${error?.errorCode} ${error?.description}")
-
+                countDownLatch.countDown()
             }
 
             override fun onReceivedHttpError(
@@ -54,9 +61,19 @@ object HuaweiSwitchDebugModeManager {
             ) {
                 super.onReceivedHttpError(view, request, errorResponse)
                 Log.e(TAG, "onReceivedHttpError $errorResponse")
+                countDownLatch.countDown()
             }
         }
 
         webView.loadUrl("http://192.168.8.1/html/home.html")
+
+        // await pages loading
+        val finished = withContext(Dispatchers.IO) {
+            countDownLatch.await(5000, TimeUnit.MILLISECONDS)
+        }
+        webView.destroy()
+        if (!finished) {
+            throw TimeoutException()
+        }
     }
 }

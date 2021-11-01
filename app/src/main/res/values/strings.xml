@@ -19,5 +19,9 @@
 
     <string name="service_notification_group_name">Default</string>
     <string name="service_notification_title">LTE Dongle Manager</string>
+
+    <string name="toast_success">Command executed successfully!</string>
+    <string name="toast_exception">Exception: %s</string>
+
 </resources>
 

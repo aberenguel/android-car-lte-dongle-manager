@@ -25,7 +25,7 @@ import org.berenguel.carheadunitconfigurer.managers.UsbResetManager
 class MainActivity : AppCompatActivity() {
 
     private val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-        Toast.makeText(this, "Exception: $throwable", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.toast_exception, throwable), Toast.LENGTH_SHORT).show()
         Log.e("MainActivity", "Exception", throwable)
     }
     private val coroutineScope =
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     binding.usbResetBtn.isEnabled = false
                     UsbResetManager.execute()
+                    successToast()
                 } finally {
                     binding.usbResetBtn.isEnabled = true
                 }
@@ -57,6 +58,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     binding.usbModeswitchBtn.isEnabled = false
                     UsbModeSwitchManager.execute(this@MainActivity)
+                    successToast()
                 } finally {
                     binding.usbModeswitchBtn.isEnabled = true
                 }
@@ -65,10 +67,20 @@ class MainActivity : AppCompatActivity() {
 
         binding.wifiScanBtn.setOnClickListener {
             EthernetWifiManager.startWifiScan(this)
+            successToast()
         }
 
         binding.huaweiSwitchDebugModeBtn.setOnClickListener {
-            HuaweiSwitchDebugModeManager.changeDeviceModeSet(this)
+            job = coroutineScope.launch {
+                try {
+                    binding.huaweiSwitchDebugModeBtn.isEnabled = false
+                    HuaweiSwitchDebugModeManager.changeDeviceModeSet(this@MainActivity)
+                    successToast()
+                } finally {
+                    binding.huaweiSwitchDebugModeBtn.isEnabled = true
+                }
+            }
+
         }
 
         binding.settingsBtn.setOnClickListener {
@@ -150,5 +162,10 @@ class MainActivity : AppCompatActivity() {
         job?.cancel()
         binding.usbResetBtn.isEnabled = true
         binding.usbModeswitchBtn.isEnabled = true
+        binding.huaweiSwitchDebugModeBtn.isEnabled = true
+    }
+
+    private fun successToast() {
+        Toast.makeText(this, R.string.toast_success, Toast.LENGTH_SHORT).show()
     }
 }
