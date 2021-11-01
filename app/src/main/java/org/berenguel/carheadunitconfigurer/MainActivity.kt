@@ -136,6 +136,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                     data = Uri.fromParts("package", packageName, null)
                 })
+                finish()
             }
             .setNegativeButton(android.R.string.cancel) { _, _ ->
                 finish()
