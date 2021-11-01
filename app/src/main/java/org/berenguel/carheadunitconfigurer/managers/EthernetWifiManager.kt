@@ -19,24 +19,14 @@ object EthernetWifiManager {
     private const val TAG = "EthernetWifiManager"
 
     fun init(context: Context) {
+
         context.registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 Log.i(TAG, "Wi-Fi scan done!")
-                val ethernetConnected = isEthernetNetworkConnected(context)
-                val wifiAvailable = isWifiConnectionAvailable(context)
-
-                Log.v(TAG, "ethernetConnected=$ethernetConnected / wifiAvailable=$wifiAvailable")
-
-                val interfaceName = PreferenceManager.getDefaultSharedPreferences(context)
-                    .getString("ethernet_wifi_interface_name", "eth0")!!
-
-                if (ethernetConnected && wifiAvailable) {
-                    setEthernetState(interfaceName, false)
-                } else if (!ethernetConnected && !wifiAvailable) {
-                    setEthernetState(interfaceName, true)
+                context?.apply {
+                    performEthernetWifiSwitch(this)
                 }
             }
-
         }, IntentFilter().apply {
             addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
             addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
@@ -70,6 +60,21 @@ object EthernetWifiManager {
         wifiManager.startScan()
     }
 
+    private fun performEthernetWifiSwitch(context: Context) {
+        val ethernetConnected = isEthernetNetworkConnected(context)
+        val wifiAvailable = isWifiConnectionAvailable(context)
+
+        Log.v(TAG, "ethernetConnected=$ethernetConnected / wifiAvailable=$wifiAvailable")
+
+        val interfaceName = PreferenceManager.getDefaultSharedPreferences(context)
+            .getString("ethernet_wifi_interface_name", "eth0")!!
+
+        if (ethernetConnected && wifiAvailable) {
+            setEthernetState(interfaceName, false)
+        } else if (!ethernetConnected && !wifiAvailable) {
+            setEthernetState(interfaceName, true)
+        }
+    }
 
     private fun setEthernetState(interfaceName: String, enable: Boolean) {
         Log.v(TAG, "setEthernetState($interfaceName, $enable)")
