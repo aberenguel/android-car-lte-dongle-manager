@@ -39,9 +39,8 @@ object HuaweiSwitchDebugModeManager {
                     view?.loadUrl("http://192.168.8.1/html/switchDebugMode.html")
                 } else {
                     Log.i(TAG, "Finished")
-                    view?.destroy()
+                    countDownLatch.countDown()
                 }
-                countDownLatch.countDown()
             }
 
             override fun onReceivedError(
