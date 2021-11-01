@@ -7,7 +7,7 @@ android {
     compileSdk 30
 
     defaultConfig {
-        applicationId "org.berenguel.carheadunitconfigurer"
+        applicationId "org.berenguel.ltemanager"
         minSdk 24
         targetSdk 30
         versionCode 1
