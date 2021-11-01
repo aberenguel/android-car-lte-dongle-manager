@@ -13,6 +13,11 @@
     <string name="ethernet_wifi_btn_txt">Wi-Fi Scan</string>
     <string name="settings_btn_txt">Settings</string>
 
-    <string name="location_permission_required_alert_txt">Permission is required for the app work properly</string>
+    <string name="location_permission_required_title">Location Permission</string>
+    <string name="location_permission_required_message">Permission is required to the app read the Wi-Fi connections</string>
+    <string name="location_permission_required_button">Set up Permission</string>
 
+    <string name="service_notification_group_name">Default</string>
+    <string name="service_notification_title">LTE Dongle Manager</string>
 </resources>
+

@@ -3,11 +3,15 @@ package org.berenguel.carheadunitconfigurer
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.*
@@ -70,53 +74,70 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            requestLocationPermissionAndroidQ()
+        } else {
+            requestLocationPermission()
+        }
+    }
 
-        requestLocationPermission()
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestLocationPermissionAndroidQ() {
+        val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                if (permissions[Manifest.permission.ACCESS_BACKGROUND_LOCATION] != true) {
+                    showLocationPermissionDialog()
+                }
+            }
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                )
+            )
+        }
     }
 
     private fun requestLocationPermission() {
+
         val requestPermissionLauncher =
-            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
-                if (isGranted) {
-                    // ok.. just continue
-                } else {
-                    Toast.makeText(
-                        this,
-                        R.string.location_permission_required_alert_txt,
-                        Toast.LENGTH_SHORT
-                    ).show()
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (!isGranted) {
+                    showLocationPermissionDialog()
                 }
             }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            when (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            )) {
-                PackageManager.PERMISSION_GRANTED -> {
-                    // ok.. just continue
-                }
-                else -> {
-                    requestPermissionLauncher.launch(
-                        Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                    )
-                }
-            }
-        } else {
-            when (ContextCompat.checkSelfPermission(
+        if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            )) {
-                PackageManager.PERMISSION_GRANTED -> {
-                    // ok.. just continue
-                }
-                else -> {
-                    requestPermissionLauncher.launch(
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    )
-                }
-            }
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissionLauncher.launch(
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
         }
+    }
+
+    private fun showLocationPermissionDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.location_permission_required_title)
+            .setMessage(R.string.location_permission_required_message)
+            .setPositiveButton(R.string.location_permission_required_button) { _, _ ->
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                })
+            }
+            .setNegativeButton(android.R.string.cancel) { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     override fun onStop() {
