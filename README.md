@@ -24,6 +24,7 @@ If a Wi-Fi connection is no more available, the app turns the ethernet interface
 
 Some events trigger the Ethernet / Wi-Fi switch procedure:
 - Application starting (at the boot)
+- Screen turns on (after standby)
 - Wi-Fi disconnection
 - Bluetooth connection
 - Button "Wi-Fi Scan" at the main screen

@@ -27,25 +27,24 @@ object EthernetWifiManager {
                     performEthernetWifiSwitch(this)
                 }
             }
-        }, IntentFilter().apply {
-            addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)
-            addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
-        })
+        }, IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
 
         context.registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                Log.i(TAG, "Bluetooth connected")
+                Log.i(TAG, "Event triggered startWifiScan: ${intent?.action}")
                 context?.apply {
                     startWifiScan(this)
-                    Handler(Looper.getMainLooper()).let { handler ->
-                        handler.postDelayed({ startWifiScan(this) }, 1000L)
-                        handler.postDelayed({ startWifiScan(this) }, 3000L)
-                        handler.postDelayed({ startWifiScan(this) }, 5000L)
+                    val handler = Handler(Looper.getMainLooper())
+                    for (delay in listOf(1000L, 3000L, 5000L)) {
+                        handler.postDelayed({ startWifiScan(this) }, delay)
                     }
                 }
             }
-
-        }, IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED))
+        }, IntentFilter().apply {
+            addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
+            addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
+            addAction(Intent.ACTION_SCREEN_ON)
+        })
     }
 
     fun startWifiScan(context: Context) {
