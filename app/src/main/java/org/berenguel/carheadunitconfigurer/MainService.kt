@@ -4,7 +4,9 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -44,7 +46,11 @@ class MainService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         // tasks when the service is started
-        EthernetWifiManager.startWifiScan(this)
+        val handler = Handler(Looper.getMainLooper())
+
+        for (delay in listOf(5000L, 10000L, 15000L)) {
+            handler.postDelayed({ EthernetWifiManager.startWifiScan(this) }, delay)
+        }
 
         return START_STICKY
     }
