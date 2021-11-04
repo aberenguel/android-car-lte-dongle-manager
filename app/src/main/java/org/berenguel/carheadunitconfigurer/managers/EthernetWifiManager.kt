@@ -57,7 +57,11 @@ object EthernetWifiManager {
         }
 
         Log.i(TAG, "Wi-Fi scan starting")
-        wifiManager.startScan()
+        val scanStarted = wifiManager.startScan()
+
+        if (!scanStarted) {
+            performEthernetWifiSwitch(context)
+        }
     }
 
     private fun performEthernetWifiSwitch(context: Context) {
