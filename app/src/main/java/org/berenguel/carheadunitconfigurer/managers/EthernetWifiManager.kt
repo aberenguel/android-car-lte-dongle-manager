@@ -1,12 +1,12 @@
 package org.berenguel.carheadunitconfigurer.managers
 
-import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
@@ -18,44 +18,73 @@ object EthernetWifiManager {
 
     private const val TAG = "EthernetWifiManager"
 
+    private var countTimer = 0
+
     fun init(context: Context) {
 
+        // listen SCAN_RESULTS_AVAILABLE_ACTION
         context.registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                Log.i(TAG, "Wi-Fi scan done!")
-                context?.apply {
-                    performEthernetWifiSwitch(this)
+            override fun onReceive(context: Context, intent: Intent?) {
+                Log.i(TAG, "SCAN_RESULTS_AVAILABLE_ACTION -> Wi-Fi scan done!")
+                if (intent?.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false) == true) {
+                    performEthernetWifiSwitch(context)
                 }
             }
         }, IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION))
 
+        // listen ACTION_SCREEN_ON
         context.registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                Log.i(TAG, "Event triggered startWifiScan: ${intent?.action}")
-                context?.apply {
-                    startWifiScan(this)
-                    val handler = Handler(Looper.getMainLooper())
-                    for (delay in listOf(1000L, 3000L, 5000L)) {
-                        handler.postDelayed({ startWifiScan(this) }, delay)
-                    }
+            override fun onReceive(context: Context, intent: Intent?) {
+
+                val handler = Handler(Looper.getMainLooper())
+                for (delay in listOf(5000L, 10000L, 15000L)) {
+                    handler.postDelayed({
+                        Log.i(TAG, "ACTION_SCREEN_ON (delay=$delay) -> startWifiScan")
+                        startWifiScan(context)
+                    }, delay)
                 }
             }
-        }, IntentFilter().apply {
-            addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
-            addAction(WifiManager.WIFI_STATE_CHANGED_ACTION)
-            addAction(Intent.ACTION_SCREEN_ON)
-        })
+        }, IntentFilter(Intent.ACTION_SCREEN_ON))
+
+        // listen WIFI_STATE_CHANGED_ACTION
+        context.registerReceiver(object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent?) {
+
+                // handle Wifi interface enabled
+                if ( WifiManager.WIFI_STATE_ENABLED == intent?.getIntExtra(WifiManager.EXTRA_WIFI_STATE, -1)) {
+                    Log.i(TAG, "WIFI_STATE_CHANGED_ACTION: Wifi interface enabled -> startWifiScan")
+                    startWifiScan(context)
+                }
+
+                // handle Wifi disconnection
+                if (NetworkInfo.State.DISCONNECTED == intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)?.state) {
+                    Log.i(TAG, "WIFI_STATE_CHANGED_ACTION: Wifi disconnection -> startWifiScan")
+                    startWifiScan(context)
+                }
+            }
+        }, IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION))
+
+        // listen ACTION_TIME_TICK
+        context.registerReceiver(object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent?) {
+                if (countTimer++ % 5 == 0) { // each 5 minutes
+                    Log.i(TAG, "ACTION_TIME_TICK -> startWifiScan")
+                    startWifiScan(context)
+                }
+            }
+        }, IntentFilter(Intent.ACTION_TIME_TICK))
     }
 
     fun startWifiScan(context: Context) {
         val wifiManager = context.getSystemService(WifiManager::class.java)
 
         if (!wifiManager.isWifiEnabled) {
-            Log.i(TAG, "Wifi disabled. Aborting")
+            Log.i(TAG, "startWifiScan: Wifi disabled. Aborting")
+            performEthernetWifiSwitch(context)
             return
         }
 
-        Log.i(TAG, "Wi-Fi scan starting")
+        Log.i(TAG, "startWifiScan: starting")
         val scanStarted = wifiManager.startScan()
 
         if (!scanStarted) {
