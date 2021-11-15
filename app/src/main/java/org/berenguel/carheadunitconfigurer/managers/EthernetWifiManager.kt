@@ -37,7 +37,7 @@ object EthernetWifiManager {
             override fun onReceive(context: Context, intent: Intent?) {
 
                 val handler = Handler(Looper.getMainLooper())
-                for (delay in listOf(5000L, 10000L, 15000L)) {
+                for (delay in listOf(5000L, 10000L, 15000L, 30000L)) {
                     handler.postDelayed({
                         Log.i(TAG, "ACTION_SCREEN_ON (delay=$delay) -> startWifiScan")
                         startWifiScan(context)
