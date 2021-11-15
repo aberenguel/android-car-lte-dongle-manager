@@ -5,8 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.NetworkInfo
+import android.net.NetworkRequest
 import android.net.wifi.WifiManager
 import android.os.Handler
 import android.os.Looper
@@ -21,6 +22,8 @@ object EthernetWifiManager {
     private var countTimer = 0
 
     fun init(context: Context) {
+
+        val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
 
         // listen SCAN_RESULTS_AVAILABLE_ACTION
         context.registerReceiver(object : BroadcastReceiver() {
@@ -46,24 +49,6 @@ object EthernetWifiManager {
             }
         }, IntentFilter(Intent.ACTION_SCREEN_ON))
 
-        // listen WIFI_STATE_CHANGED_ACTION
-        context.registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent?) {
-
-                // handle Wifi interface enabled
-                if ( WifiManager.WIFI_STATE_ENABLED == intent?.getIntExtra(WifiManager.EXTRA_WIFI_STATE, -1)) {
-                    Log.i(TAG, "WIFI_STATE_CHANGED_ACTION: Wifi interface enabled -> startWifiScan")
-                    startWifiScan(context)
-                }
-
-                // handle Wifi disconnection
-                if (NetworkInfo.State.DISCONNECTED == intent?.getParcelableExtra<NetworkInfo>(WifiManager.EXTRA_NETWORK_INFO)?.state) {
-                    Log.i(TAG, "WIFI_STATE_CHANGED_ACTION: Wifi disconnection -> startWifiScan")
-                    startWifiScan(context)
-                }
-            }
-        }, IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION))
-
         // listen ACTION_TIME_TICK
         context.registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent?) {
@@ -73,6 +58,44 @@ object EthernetWifiManager {
                 }
             }
         }, IntentFilter(Intent.ACTION_TIME_TICK))
+
+        // listen WIFI_STATE_CHANGED_ACTION
+        context.registerReceiver(object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent?) {
+
+                // handle Wifi interface enabled
+                if (WifiManager.WIFI_STATE_ENABLED == intent?.getIntExtra(WifiManager.EXTRA_WIFI_STATE, -1)) {
+                    Log.i(TAG, "WIFI_STATE_CHANGED_ACTION: Wifi interface enabled -> startWifiScan")
+                    startWifiScan(context)
+                }
+            }
+        }, IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION))
+
+        // listen TRANSPORT_ETHERNET available
+        connectivityManager.registerNetworkCallback(
+            NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_ETHERNET)
+                .build(),
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    Log.i(TAG, "TRANSPORT_ETHERNET available -> startWifiScan")
+                    startWifiScan(context)
+                }
+            }
+        )
+
+        // listen TRANSPORT_WIFI lost
+        connectivityManager.registerNetworkCallback(
+            NetworkRequest.Builder()
+                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                .build(),
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onLost(network: Network) {
+                    Log.i(TAG, "TRANSPORT_WIFI lost -> startWifiScan")
+                    startWifiScan(context)
+                }
+            }
+        )
     }
 
     fun startWifiScan(context: Context) {
