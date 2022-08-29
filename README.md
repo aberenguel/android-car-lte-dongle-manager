@@ -28,3 +28,4 @@ Some events trigger the Ethernet / Wi-Fi switch procedure:
 - Wi-Fi interface enabled
 - Wi-Fi disconnection
 - Button "Wi-Fi Scan" at the main screen
+- ACTION_TIME_TICK -> every 5 minutes
