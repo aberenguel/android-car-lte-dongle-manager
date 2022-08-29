@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.preference.PreferenceManager
+import java.io.IOException
 
 
 object EthernetWifiManager {
@@ -128,6 +129,18 @@ object EthernetWifiManager {
             setEthernetState(interfaceName, false)
         } else if (!ethernetConnected && !wifiAvailable) {
             setEthernetState(interfaceName, true)
+        } else {
+            if (!isOnline()) {
+                if (ethernetConnected) {
+                    // restart ethernet
+                    setEthernetState(interfaceName, false)
+                    setEthernetState(interfaceName, true)
+                } else {
+                    // switch to ethernet
+                    setEthernetState(interfaceName, true)
+                }
+            }
+
         }
     }
 
@@ -166,5 +179,19 @@ object EthernetWifiManager {
             actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
             else -> false
         }
+    }
+
+    private fun isOnline(): Boolean {
+        val runtime = Runtime.getRuntime()
+        try {
+            val ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8")
+            val exitValue = ipProcess.waitFor()
+            return exitValue == 0
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: InterruptedException) {
+            e.printStackTrace()
+        }
+        return false
     }
 }
